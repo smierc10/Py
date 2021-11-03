@@ -6,7 +6,7 @@ pip install --upgrade python-engineio==3.13.2
 pip install --upgrade Flask-SocketIO==4.3.1
 '''
 
-from re import X
+
 from flask import Flask
 from flask import *
 from flask_sqlalchemy import SQLAlchemy
@@ -82,7 +82,7 @@ def sendhistory():
 def chat():
 	if "username" in session and "password" in session:
 		us = session["username"]
-		return render_template('index.html',us=us)
+		return render_template('chat.html',us=us)
 	else:
 		return redirect(url_for('login'))
 
@@ -106,7 +106,6 @@ def login():
 		
 		us = request.form['us']
 		ps = request.form['ps']
-		email = request.form['email']
 		#usr_data = users(usr=us,psw=ps,email=email)
 		#db.session.add(usr_data)
 		#db.session.commit()
@@ -114,7 +113,8 @@ def login():
 		if found_user and found_user.psw == ps:
 			session["username"] = us
 			session["password"] = ps
-			return redirect(url_for('jd'))
+			session["email"] = found_user.email
+			return redirect(url_for('home'))
 		elif found_user:
 			return "niepoprawne hasło"
 		else:
@@ -125,16 +125,28 @@ def login():
 		else:
 			return render_template("login.html")
 
-@app.route('/whatyouwant')
-def jd():
+@app.route('/user', methods = ['POST','GET'])
+def user():
 	username = session["username"]
-	return f"<h1>hej {username}, miło cię widzieć"
+	found_user = users.query.filter_by(usr=username).first()
+	if request.method == 'POST':
+		email = request.form['email']
+		found_user.email = email
+		db.session.commit()
+		return redirect(url_for('user'))
+	else:
+		
+		email = "email"
+		if found_user.email != '':
+			email = found_user.email
+			session["email"] = email
+		return render_template('user.html',email=email,username=username)
 
 @app.route('/logout')
 def logout():
 	session.pop("username",None)
 	session.pop("password",None)
-	return redirect(url_for('login'))
+	return redirect(url_for('home'))
 
 
 @app.route('/register', methods=['POST','GET'])
@@ -150,13 +162,25 @@ def register():
 				db.session.add(usr_data)
 				db.session.commit()
 				session["username"] = us
-				return redirect(url_for('jd'))
+				session["password"] = ps
+				if email != None:
+					session["email"] = email
+				return redirect(url_for('home'))
 			else:
 				return "przykro mi taki uzytwkonik juz istnieje"
 		else:
 			return "aby stworzyc konto trzeba podac nazwe i haslo"
 	else:
 		return render_template('login.html')
+
+
+@app.route('/')
+def home():
+	user = ""
+	if "username" in session:
+		user = session["username"]
+	return render_template('home.html',username=user)
+
 
 if __name__ == '__main__':
 	db.create_all()
