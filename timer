@@ -1,0 +1,159 @@
+import random
+import pygame
+pygame.font.init() 
+
+def gen():
+    global list2
+    list = []
+    list2=[[0,0]]
+    x1=0
+    x2=0
+    for i in range(100):
+        i2=random.choice([[0,1],[1,0]])
+        list.append(i2)
+        if i2==[0,1]:
+            x1+=1
+        else:
+            x2+=1
+
+    for i in range(len(list)):
+        if i+1 < len(list):
+            i2=i+1
+        else:
+            i2=i
+        if list[i] != list[i2] and i != [0,0]:
+            list2.append(list[i])
+            list2.append([0,0])
+        else:
+            list2.append(list[i])
+
+def gamewin1():
+    global player
+    global ingame
+    WIN.fill((255,0,0))
+    for i in range(5):
+        if len(list2) > i:
+            Temp = list2[i]
+            if Temp[0] ==1:
+                side_a=pygame.Rect(500,680-i*pixel,pixel,pixel)
+                pygame.draw.rect(WIN,(1,133,1),side_a)
+                if side_a.colliderect(player):
+                    ingame = False
+            pygame.draw.rect(WIN,(1,133,1),pygame.Rect(500+pixel,680-i*pixel,pixel,pixel))
+            if Temp[1] ==1:
+                side_d=pygame.Rect(500+pixel*2,680-i*pixel,pixel,pixel)
+                pygame.draw.rect(WIN,(1,133,1),side_d)
+                if side_d.colliderect(player):
+                    ingame = False
+
+    if actualpose == 'a':
+        player =pygame.Rect(500,680,pixel,pixel)
+        pygame.draw.rect(WIN,(1,1,255),player)
+    elif actualpose == 'd':
+        player = pygame.Rect(500+pixel*2,680,pixel,pixel)
+        pygame.draw.rect(WIN,(1,1,255),player)
+    text1 = myfont.render(str(score), False, (255, 0, 255))
+    WIN.blit(text1,(760,10))
+
+def mainmenu():
+    global Timer
+    Timer += 1
+    if Timer == 20:
+        WIN.fill((random.randint(1,255),random.randint(1,255),random.randint(1,255)))
+        Timer = 0
+
+
+def window():
+    if ingame == True:
+        gamewin1()
+    else:
+        mainmenu()
+
+    pygame.display.update()
+
+def events():
+    global clickedresgen
+    global clickedd
+    global clickeda
+    global actualpose
+    global score
+    global ingame
+    global run
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit
+            run=False
+    if pygame.key.get_pressed()[pygame.K_r] == True and clickedresgen == False:
+        gen()
+        clickedresgen = True
+    if pygame.key.get_pressed()[pygame.K_r] == False and clickedresgen == True:
+        clickedresgen = False
+    if pygame.key.get_pressed()[pygame.K_a] == True and clickeda == False and actualpose !='a':
+        actualpose='a'
+        clickeda = True
+    if pygame.key.get_pressed()[pygame.K_a] == True and clickeda == False and actualpose =='a':
+        clickeda=True
+        actualpose='a'
+        list2.pop(0)
+        score += 1
+    if pygame.key.get_pressed()[pygame.K_a] == False and clickeda == True:
+        clickeda = False
+    if pygame.key.get_pressed()[pygame.K_d] == True and clickeda == False and actualpose !='d':
+        actualpose='d'
+        clickedd = True
+    if pygame.key.get_pressed()[pygame.K_d] == True and clickedd == False and actualpose =='d':
+        clickedd = True
+        actualpose='d'
+        list2.pop(0)
+        score += 1
+    if pygame.key.get_pressed()[pygame.K_d] == False and clickedd == True:
+        clickedd = False
+    if pygame.key.get_pressed()[pygame.K_s] == True and ingame == False:
+        gen()
+        ingame=True
+        score = 0
+
+def gameloop():
+    events()
+    window()
+
+def setup():
+    gen()
+    global pixel
+    global WIN
+    global score
+    global run
+    global player
+    global myfont
+    global actualpose
+    global clickeda
+    global clickedd
+    global clickedresgen
+    global ingame
+    global clock
+    global FPS
+    global Timer
+    Timer = 0
+    score = 0
+    player = pygame.Rect(-100,-100,0,0)
+    pixel = 200
+    WIN = pygame.display.set_mode((1600,900))
+    myfont = pygame.font.SysFont('Comic Sans MS', 120)
+    run = True
+    ingame = False
+    actualpose= random.choice(['a','d'])
+    clickedresgen = False
+    clickedd = False
+    clickeda = False
+    FPS = 60
+    clock = pygame.time.Clock()
+
+
+
+if __name__ == '__main__':
+    gen()
+    setup()
+    while run:
+        clock.tick(FPS)
+        gameloop()
+        
